@@ -1,13 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include <stdbool.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include<bits/stdc++.h> 
 #define MAX_ARGS 100000
 
-int count = 0;
+int count;
+
 extern "C" char ** words_array;
 
 char ** parse_read(char * buffer, int * Length){
@@ -52,7 +54,9 @@ static inline void cudaInitMaster(int rank, int nprocs, char * text, int * lengt
 			rank, (rank % cudaDeviceCount), cE);
 		exit(-1);
     }
-
+	
+	count = 0;
+   
     words_array = parse_read(text, length);
    
 }
@@ -68,7 +72,7 @@ static void some_function(){
 __device__ checkSubstring(char* string, char* sub, int pos){
 	
 	for (int y = 0; y < strlen(sub); y++) {
-		if (str[pos + y] == sub[y]) {
+		if (string[pos + y] == sub[y]) {
 			continue;
 		}
 		else{
@@ -81,15 +85,13 @@ __device__ checkSubstring(char* string, char* sub, int pos){
 
 __global__ void countSubstring(char* string, char* sub) {
 
-	count = 0;
-
 	for (int x = 0; x < (strlen(string) - strlen(sub)); x++) {
-		count += checkSubstring(text, substring, x);
+		count += checkSubstring(string, sub, x);
 	}
 
 }
 
-extern "C" getCount(){
+extern "C" int getCount(){
 	return count;
 }
 
