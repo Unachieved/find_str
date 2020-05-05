@@ -8,11 +8,12 @@
 #include<bits/stdc++.h> 
 #define MAX_ARGS 100000
 
-int* count;
+__global__ int* count;
 
 extern "C" char ** words_array;
 
 char ** parse_read(char * buffer, int * Length){
+
     char ** array;
     //array = (char **)calloc(MAX_ARGS, sizeof(char *));
     cudaMallocManaged(&array, MAX_ARGS*sizeof(int));

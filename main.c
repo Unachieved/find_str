@@ -96,7 +96,11 @@ int main(int argc, char** argv) {
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 
+	double start = MPI_Wtime();
 	read_file(rank, nprocs, &text, file_name);
+	double end = MPI_Wtime();
+
+	printf("Parallel I/O reading time: %f\n", (end - start));
 
 	initMaster(rank, nprocs, text, &length);
 	kernellLaunch(rank, nprocs, words_array, length, threadsCount);
