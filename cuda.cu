@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include <stdbool.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include<bits/stdc++.h> 
 
-int count = 0;
+int count;
 
 static inline void genInitMaster(){
 
@@ -21,29 +22,15 @@ static inline void genInitMaster(){
 			myrank, (myrank % cudaDeviceCount), cE);
 		exit(-1);
     }
-
-    int i = 0;
-    char *p = strtok (buf, " ");
-    char ** array = calloc(100, sizeof(char *));
-
-    while (p != NULL)
-    {
-        (*array) = calloc(strlen(p), sizeof(char));
-        array[i++] = p;
-        p = strtok (NULL, " ");
-    }
-
-    
-    //cudaMallocManaged(&dist_info.dp_array, num_files * num_files * tot_length*tot_length*sizeof(int));
-	//cudaMallocManaged(&dist_info.dists, num_files*num_files*sizeof(int));
 	
+	count = 0;
    
 }
 
 __device__ checkSubstring(char* string, char* sub, int pos){
 	
 	for (int y = 0; y < strlen(sub); y++) {
-		if (str[pos + y] == sub[y]) {
+		if (string[pos + y] == sub[y]) {
 			continue;
 		}
 		else{
@@ -56,14 +43,12 @@ __device__ checkSubstring(char* string, char* sub, int pos){
 
 __global__ void countSubstring(char* string, char* sub) {
 
-	count = 0;
-
 	for (int x = 0; x < (strlen(string) - strlen(sub)); x++) {
-		count += checkSubstring(text, substring, x);
+		count += checkSubstring(string, sub, x);
 	}
 
 }
 
-extern "C" getCount(){
+extern "C" int getCount(){
 	return count;
 }
