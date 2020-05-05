@@ -139,7 +139,11 @@ int main(int argc, char** argv) {
 	char ** to_find = parse_read(input, &input_len, 0);
 
 
+	double start = MPI_Wtime();
 	read_file(rank, nprocs, &text, file_name);
+	double end = MPI_Wtime();
+
+	printf("Parallel I/O reading time: %f\n", (end - start));
 
 	initMaster(rank, nprocs, text, &length, input_len);
 	kernellLaunch(rank, nprocs, words_array, length, threadsCount, to_find, input_len);
