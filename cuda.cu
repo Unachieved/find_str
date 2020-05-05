@@ -8,7 +8,7 @@
 #include<bits/stdc++.h> 
 #define MAX_ARGS 100000
 
-int count;
+int* count;
 
 extern "C" char ** words_array;
 
@@ -55,7 +55,7 @@ static inline void cudaInitMaster(int rank, int nprocs, char * text, int * lengt
 		exit(-1);
     }
 	
-	count = 0;
+	*count = 0;
    
     words_array = parse_read(text, length);
    
@@ -65,33 +65,18 @@ extern "C" void initMaster(int rank, int nprocs, char * text, int * length){
     cudaInitMaster(rank, nprocs, text, length);
 }
 
-static void some_function(){
-    
-}
 
-__device__ checkSubstring(char* string, char* sub, int pos){
-	
-	for (int y = 0; y < strlen(sub); y++) {
-		if (string[pos + y] == sub[y]) {
-			continue;
-		}
-		else{
-			return 0;
+__global__ void countSubstring(char** string, char* sub, int length) {
+
+	for (int x = 0; x < length; x++) {
+		if (strcmp(string[x], sub) == 0) {
+			*count += 1;
 		}
 	}
-	return 1;
 
 }
 
-__global__ void countSubstring(char* string, char* sub) {
-
-	for (int x = 0; x < (strlen(string) - strlen(sub)); x++) {
-		count += checkSubstring(string, sub, x);
-	}
-
-}
-
-extern "C" int getCount(){
+extern "C" int* getCount(){
 	return count;
 }
 

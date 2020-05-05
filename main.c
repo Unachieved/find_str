@@ -73,7 +73,7 @@ ssize_t read_file(int rank, int nprocs, char ** buf, char * file_name){
 void kernellLaunch(int rank, int nprocs, char ** array, int length, ushort threadsCount){
 
     //hello
-	int numBlocks = length + threadsCount -1 ) / threadsCount;
+	int numBlocks = (length + threadsCount -1 ) / threadsCount;
 	kernellCall(array, length, threadsCount, numBlocks);
 	
 }
