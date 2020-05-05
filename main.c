@@ -8,6 +8,7 @@
 
 extern void initMaster(int rank, int nprocs, char * text, int * length);
 char ** words_array = NULL;
+extern void kernelCall(char ** array, int length, ushort threadsCount, int numBlocks);
 void ErrorMessage(int error, int rank, char* string){
           fprintf(stderr, "Process %d: Error %d in %s\n", rank, error, string);
           MPI_Finalize();
@@ -69,11 +70,12 @@ ssize_t read_file(int rank, int nprocs, char ** buf, char * file_name){
 }
 
 
-void kernellLaunch(int rank, int nprocs, char * words_array, ushort threadsCount){
+void kernellLaunch(int rank, int nprocs, char ** array, int length, ushort threadsCount){
 
     //hello
-
-
+	int numBlocks = length + threadsCount -1 ) / threadsCount;
+	kernellCall(array, length, threadsCount, numBlocks);
+	
 }
 
 int main(int argc, char** argv) {
@@ -97,7 +99,7 @@ int main(int argc, char** argv) {
 	read_file(rank, nprocs, &text, file_name);
 
 	initMaster(rank, nprocs, text, &length);
-	kernellLaunch(rank, nprocs, words_array, threadsCount);
+	kernellLaunch(rank, nprocs, words_array, length, threadsCount);
 
 
 	MPI_Barrier(MPI_COMM_WORLD);

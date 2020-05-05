@@ -92,3 +92,8 @@ __global__ void countSubstring(char* string, char* sub) {
 extern "C" getCount(){
 	return count;
 }
+
+extern "C" void kernelCall(char ** array, int length, ushort threadsCount, int numBlocks){
+	countSubstring<<<numBlocks, threadsCount>>>(array, length);
+}
+
