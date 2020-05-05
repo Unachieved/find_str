@@ -6,9 +6,10 @@
 #include <string.h>
 #include <math.h>
 
+int count =0;
 extern void initMaster(int rank, int nprocs, char * text, int * length);
 char ** words_array = NULL;
-extern void kernelCall(char ** array, int length, ushort threadsCount, int numBlocks);
+extern void kernelCall(char ** array, int length, ushort threadsCount, int numBlocks, char ** to_find, int find);
 void ErrorMessage(int error, int rank, char* string){
           fprintf(stderr, "Process %d: Error %d in %s\n", rank, error, string);
           MPI_Finalize();
@@ -70,11 +71,49 @@ ssize_t read_file(int rank, int nprocs, char ** buf, char * file_name){
 }
 
 
-void kernellLaunch(int rank, int nprocs, char ** array, int length, ushort threadsCount){
+void kernellLaunch(int rank, int nprocs, char ** array, int length, ushort threadsCount, int find, char ** to_find){
 
     //hello
+	int ierr;
+	MPI_Request request_send = MPI_REQUEST_NULL;
+	MPI_Request request_recv = MPI_REQUEST_NULL;
+	
+		 
+	if(nprocs>1 && find>1){
+		char ** data_last = (char **)calloc(find, sizeof(char *));
+		char ** data_before = (char **)calloc(find, sizeof(char *));
+
+		int found = 0;
+		while(found<find){
+			char * tmp = calloc(strlen(array[length+found-find]), sizeof(char));
+			strcpy(tmp, array[length+found-find]));
+			data_last[found] = tmp;
+		}
+			 
+		if(rank<nprocs-1)
+			MPI_Isend(data_last, find, MPI_CHAR, (my_rank+1), 0, MPI_COMM_WORLD, &request_send);
+			 
+		//recieved the last row of the previous rank and the first row of the next rank --- to populate this ranks ghost cells
+		if(rank >0)
+			MPI_Irecv(data_before, find, MPI_CHAR, (my_rank-1), MPI_ANY_TAG, MPI_COMM_WORLD, &request_recv);
+			 
+		//The following are waits to make sure that the data was sent and recieved as expected
+		ierr=MPI_Wait(&request_recv, &status);
+		Ierr=MPI_Wait(&request_send, &status);
+			 
+			 //place the recieved ghost rows in their proper positions in the local rank
+		for(j=0; j < find; ++j){
+			array[j] = data_before[j]; 
+		}
+			
+		free(data_last);
+		free(ghost_before);
+
+	}
+	
 	int numBlocks = length + threadsCount -1 ) / threadsCount;
-	kernellCall(array, length, threadsCount, numBlocks);
+	kernellCall(array, length, threadsCount, numBlocks, to_find, find);
+	cudaDeviceSynchronize();
 	
 }
 
@@ -83,23 +122,27 @@ int main(int argc, char** argv) {
 	setvbuf(stdout, NULL, _IONBF, 0 );
 
 	if(argc<4){
-		fprintf(stderr, "Process 0: Invalid number of arguments\nPlease input as such:\n\t./a.out <file_name> <num_threads>\n");
+		fprintf(stderr, "Process 0: Invalid number of arguments\nPlease input as such:\n\t./a.out <file_name> <to_find> <num_threads>\n");
 	}
 	
 	int rank, nprocs;
     char * file_name = argv[1];
-	int threadsCount = atoi(argv[2]);
+	char * input = argv[2];
+	int threadsCount = atoi(argv[3]);
 	char * text;
-    int length;
+    int length, input_len;
 
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 
+	char ** to_find = parse_read(input, &input_len, 0);
+
+
 	read_file(rank, nprocs, &text, file_name);
 
-	initMaster(rank, nprocs, text, &length);
-	kernellLaunch(rank, nprocs, words_array, length, threadsCount);
+	initMaster(rank, nprocs, text, &length, input_len);
+	kernellLaunch(rank, nprocs, words_array, length, threadsCount, to_find, input_len);
 
 
 	MPI_Barrier(MPI_COMM_WORLD);

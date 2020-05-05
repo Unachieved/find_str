@@ -8,18 +8,18 @@
 #include<bits/stdc++.h> 
 #define MAX_ARGS 100000
 
-int count;
+extern "C" int count;
 
 extern "C" char ** words_array;
 
-char ** parse_read(char * buffer, int * Length){
+static inline char ** parse_read(char * buffer, int * Length, int in_len){
     char ** array;
     //array = (char **)calloc(MAX_ARGS, sizeof(char *));
     cudaMallocManaged(&array, MAX_ARGS*sizeof(int));
-    int len=0;
+    int len=in_len;
     
     // delimit commands by space and newline
-    char * pch;
+	char * pch;
     
     
     pch = strtok (buffer,",\n \r\n");
@@ -41,7 +41,7 @@ char ** parse_read(char * buffer, int * Length){
 }
 
 
-static inline void cudaInitMaster(int rank, int nprocs, char * text, int * length){
+static inline void cudaInitMaster(int rank, int nprocs, char * text, int * length, int in_len){
 
     int cE, cudaDeviceCount;
 	if((cE = cudaGetDeviceCount( &cudaDeviceCount)) != cudaSuccess ){
@@ -57,17 +57,14 @@ static inline void cudaInitMaster(int rank, int nprocs, char * text, int * lengt
 	
 	count = 0;
    
-    words_array = parse_read(text, length);
+    words_array = parse_read(text, length, in_len);
    
 }
 
-extern "C" void initMaster(int rank, int nprocs, char * text, int * length){
-    cudaInitMaster(rank, nprocs, text, length);
+extern "C" void initMaster(int rank, int nprocs, char * text, int * length, int in_len){
+    cudaInitMaster(rank, nprocs, text, length, in_len);
 }
 
-static void some_function(){
-    
-}
 
 __device__ checkSubstring(char* string, char* sub, int pos){
 	
@@ -95,7 +92,7 @@ extern "C" int getCount(){
 	return count;
 }
 
-extern "C" void kernelCall(char ** array, int length, ushort threadsCount, int numBlocks){
-	countSubstring<<<numBlocks, threadsCount>>>(array, length);
+extern "C" void kernelCall(char ** array, int length, ushort threadsCount, int numBlocks, char ** to_find, int find){
+	countSubstring<<<numBlocks, threadsCount>>>(array, length, to_find, find);
 }
 
