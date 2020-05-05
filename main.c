@@ -71,7 +71,7 @@ ssize_t read_file(int rank, int nprocs, char ** buf, char * file_name){
 
 void kernellLaunch(int rank, int nprocs, char * words_array, ushort threadsCount){
 
-    
+    //hello
 
 
 }

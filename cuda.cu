@@ -7,7 +7,7 @@
 #include<bits/stdc++.h> 
 #define MAX_ARGS 100000
 
-
+int count = 0;
 extern "C" char ** words_array;
 
 char ** parse_read(char * buffer, int * Length){
@@ -54,16 +54,41 @@ static inline void cudaInitMaster(int rank, int nprocs, char * text, int * lengt
     }
 
     words_array = parse_read(text, length);
+   
+}
 
-    
-    //cudaMallocManaged(&dist_info.dp_array, num_files * num_files * tot_length*tot_length*sizeof(int));
-	//cudaMallocManaged(&dist_info.dists, num_files*num_files*sizeof(int));
-	
+extern "C" void initMaster(int rank, int nprocs, char * text, int * length){
+    cudaInitMaster(rank, nprocs, text, length);
+}
 
+static void some_function(){
     
 }
 
+__device__ checkSubstring(char* string, char* sub, int pos){
+	
+	for (int y = 0; y < strlen(sub); y++) {
+		if (str[pos + y] == sub[y]) {
+			continue;
+		}
+		else{
+			return 0;
+		}
+	}
+	return 1;
 
-extern "C" void initMaster(int rank, int nprocs, char * text, int * length){
-	cudaInitMaster(rank, nprocs, text, length);
+}
+
+__global__ void countSubstring(char* string, char* sub) {
+
+	count = 0;
+
+	for (int x = 0; x < (strlen(string) - strlen(sub)); x++) {
+		count += checkSubstring(text, substring, x);
+	}
+
+}
+
+extern "C" getCount(){
+	return count;
 }
