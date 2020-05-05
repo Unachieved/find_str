@@ -6,7 +6,7 @@
 #include <string.h>
 #include <math.h>
 
-
+extern void initMaster(int rank, int nprocs, char * text, int * length);
 char ** words_array = NULL;
 void ErrorMessage(int error, int rank, char* string){
           fprintf(stderr, "Process %d: Error %d in %s\n", rank, error, string);
@@ -68,6 +68,14 @@ ssize_t read_file(int rank, int nprocs, char ** buf, char * file_name){
 	return (ssize_t)end-start;
 }
 
+
+void kernellLaunch(int rank, int nprocs, char * words_array, ushort threadsCount){
+
+    //hello
+
+
+}
+
 int main(int argc, char** argv) {
 
 	setvbuf(stdout, NULL, _IONBF, 0 );
@@ -80,6 +88,7 @@ int main(int argc, char** argv) {
     char * file_name = argv[1];
 	int threadsCount = atoi(argv[2]);
 	char * text;
+    int length;
 
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -87,8 +96,8 @@ int main(int argc, char** argv) {
 
 	read_file(rank, nprocs, &text, file_name);
 
-	initMaster(rank, nprocs, text);
-	//kernellLaunch(genomes, num_files, (int *)gen_read_sz, rank, nprocs, tot_length, threadsCount);
+	initMaster(rank, nprocs, text, &length);
+	kernellLaunch(rank, nprocs, words_array, threadsCount);
 
 
 	MPI_Barrier(MPI_COMM_WORLD);
